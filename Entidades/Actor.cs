@@ -6,7 +6,7 @@ namespace SPeliculasAPI.Entidades {
         [Required]
         [StringLength(100)]
         public string Nombre { get; set; }
-        public DateTime FechaNacimiento { get; set; }
+        public DateTime? FechaNacimiento { get; set; }
         public string FotoURL { get; set; }
     }
 }

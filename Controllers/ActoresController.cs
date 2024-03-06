@@ -50,11 +50,11 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="actorCreacionDTO"></param>
         /// <returns></returns>
         [HttpPost("crear")]
-        public async Task<ActionResult> actorCreate([FromBody] ActorCreacionDTO actorCreacionDTO) {
+        public async Task<ActionResult> actorCreate([FromForm] ActorCreacionDTO actorCreacionDTO) {
             var actor = mapper.Map<Actor>(actorCreacionDTO);
             context.Add(actor);
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
             var actorDTO = mapper.Map<ActorDTO>(actor);
 
             return new CreatedAtRouteResult("ObtenerActor", new { Id = actorDTO.Id }, actorDTO);
@@ -67,15 +67,14 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="actorCreacionDTO"></param>
         /// <returns></returns>
         [HttpPut("actualizar/{id:int}")]
-        public async Task<ActionResult> actorUpdate(int id, [FromBody] ActorCreacionDTO actorCreacionDTO) {
-            var actorExiste = await context.Actores.AnyAsync(a => a.Id == id);
+        public async Task<ActionResult> actorUpdate(int id, [FromForm] ActorCreacionDTO actorCreacionDTO) {
+            var actor = await context.Actores.FirstOrDefaultAsync(a => a.Id == id);
 
-            if (!actorExiste) { return NotFound("El actor no existe."); }
+            if (actor is null) { return NotFound("El actor no existe."); }
 
-            var actor = mapper.Map<Actor>(actorCreacionDTO);
-            actor.Id = id;
+            actor = mapper.Map(actorCreacionDTO, actor);
+            //actor.Id = id;
 
-            context.Entry(actor).State = EntityState.Modified;
             await context.SaveChangesAsync();
 
             return NoContent();
