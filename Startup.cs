@@ -1,4 +1,6 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace SPeliculasAPI {
     public class Startup {
@@ -10,15 +12,18 @@ namespace SPeliculasAPI {
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add services to the container.
+            // Inyectando AutoMapper
+            services.AddAutoMapper(typeof(Startup));
 
+            // Add services to the container.
+            services.AddDbContext<ApplicationDbContext>(opc => opc.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Peliculas API", Version = "v1", Description = "Web API de Películas", Contact = new OpenApiContact { Email = "fersanti2896@gmail.com" } });
-                
+
                 //c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 //{
                 //    Name = "Authorization",
@@ -42,7 +47,11 @@ namespace SPeliculasAPI {
                 //        new string[]{}
                 //    }
                 //});
-            });
+
+                var fileXML = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var routeXML = Path.Combine(AppContext.BaseDirectory, fileXML);
+                c.IncludeXmlComments(routeXML);
+            });           
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger) {
