@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SPeliculasAPI.Services;
 using System.Reflection;
 
 namespace SPeliculasAPI {
@@ -15,9 +16,13 @@ namespace SPeliculasAPI {
             // Inyectando AutoMapper
             services.AddAutoMapper(typeof(Startup));
 
+            // Almacenador de Archivos
+            services.AddTransient<IAlmacenadorArchivoService, AlmacenadorArchivoService>();
+            services.AddHttpContextAccessor();
+
             // Add services to the container.
             services.AddDbContext<ApplicationDbContext>(opc => opc.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
@@ -65,6 +70,7 @@ namespace SPeliculasAPI {
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseCors();
             app.UseAuthorization();

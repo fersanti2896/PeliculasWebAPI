@@ -8,7 +8,8 @@ namespace SPeliculasAPI.Helpers {
             CreateMap<Genero, GeneroDTO>().ReverseMap();
             CreateMap<GeneroCreacionDTO, Genero>();
             CreateMap<Actor, ActorDTO>().ReverseMap();
-            CreateMap<ActorCreacionDTO, Actor>();
+            CreateMap<ActorCreacionDTO, Actor>().ForMember(x => x.FotoURL, opc => opc.Ignore());
+            CreateMap<ActorActDTO, Actor>().ReverseMap();
         }
     }
 }

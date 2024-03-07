@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPeliculasAPI.DTOs;
 using SPeliculasAPI.Entidades;
+using SPeliculasAPI.Services;
 
 namespace SPeliculasAPI.Controllers {
     [ApiController]
@@ -10,13 +12,17 @@ namespace SPeliculasAPI.Controllers {
     public class ActoresController : ControllerBase {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IAlmacenadorArchivoService almacenadorArchivoService;
+        private readonly string contenedor = "Actores";
 
         public ActoresController(
             ApplicationDbContext context,
-            IMapper mapper
+            IMapper mapper,
+            IAlmacenadorArchivoService almacenadorArchivoService
         ) {
             this.context = context;
             this.mapper = mapper;
+            this.almacenadorArchivoService = almacenadorArchivoService;
         }
 
         /// <summary>
@@ -52,9 +58,20 @@ namespace SPeliculasAPI.Controllers {
         [HttpPost("crear")]
         public async Task<ActionResult> actorCreate([FromForm] ActorCreacionDTO actorCreacionDTO) {
             var actor = mapper.Map<Actor>(actorCreacionDTO);
+
+            if (actorCreacionDTO.FotoURL != null) {
+                using (var memoryStream = new MemoryStream()) { 
+                    await actorCreacionDTO.FotoURL.CopyToAsync(memoryStream);
+                    var contenido = memoryStream.ToArray();
+                    var extension = Path.GetExtension(actorCreacionDTO.FotoURL.FileName);
+
+                    actor.FotoURL = await almacenadorArchivoService.GuardarArchivo(contenido, extension, contenedor, actorCreacionDTO.FotoURL.ContentType);
+                }
+            }
+
             context.Add(actor);
 
-            //await context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             var actorDTO = mapper.Map<ActorDTO>(actor);
 
             return new CreatedAtRouteResult("ObtenerActor", new { Id = actorDTO.Id }, actorDTO);
@@ -73,7 +90,17 @@ namespace SPeliculasAPI.Controllers {
             if (actor is null) { return NotFound("El actor no existe."); }
 
             actor = mapper.Map(actorCreacionDTO, actor);
-            //actor.Id = id;
+            actor.Id = id;
+
+            if (actorCreacionDTO.FotoURL != null) {
+                using (var memoryStream = new MemoryStream()) {
+                    await actorCreacionDTO.FotoURL.CopyToAsync(memoryStream);
+                    var contenido = memoryStream.ToArray();
+                    var extension = Path.GetExtension(actorCreacionDTO.FotoURL.FileName);
+
+                    actor.FotoURL = await almacenadorArchivoService.EditarArchivo(contenido, extension, contenedor, actor.FotoURL, actorCreacionDTO.FotoURL.ContentType);
+                }
+            }
 
             await context.SaveChangesAsync();
 
@@ -93,6 +120,27 @@ namespace SPeliculasAPI.Controllers {
 
             context.Remove(new Actor() { Id = id });
 
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPatch("parcial/{id:int}")]
+        public async Task<ActionResult> actorPartial(int id, [FromBody] JsonPatchDocument<ActorActDTO> patchDocument) {
+            if (patchDocument == null) { return BadRequest(); }
+
+            var actor = await context.Actores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if(actor is null) { return NotFound($"No existe el actor con el id {id}"); }
+
+            var actorDTO = mapper.Map<ActorActDTO>(actor);
+            patchDocument.ApplyTo(actorDTO, ModelState);
+
+            var isValid = TryValidateModel(actorDTO);
+
+            if(!isValid) { return BadRequest(ModelState); }
+
+            mapper.Map(actorDTO, actor);
             await context.SaveChangesAsync();
 
             return NoContent();
