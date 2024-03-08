@@ -132,6 +132,12 @@ namespace SPeliculasAPI.Controllers {
             return NoContent();
         }
 
+        /// <summary>
+        /// Actualización parcial de un actor.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="patchDocument"></param>
+        /// <returns></returns>
         [HttpPatch("parcial/{id:int}")]
         public async Task<ActionResult> actorPartial(int id, [FromBody] JsonPatchDocument<ActorActDTO> patchDocument) {
             if (patchDocument == null) { return BadRequest(); }
