@@ -1,6 +1,6 @@
 ﻿namespace SPeliculasAPI.DTOs {
     public class PaginacionDTO {
-        public int Pagina { get; set; }
+        public int Pagina { get; set; } = 1;
         private int elementos = 10;
         private readonly int limite = 50;
 
