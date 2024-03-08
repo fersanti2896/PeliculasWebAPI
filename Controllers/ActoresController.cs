@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPeliculasAPI.DTOs;
 using SPeliculasAPI.Entidades;
+using SPeliculasAPI.Helpers;
 using SPeliculasAPI.Services;
 
 namespace SPeliculasAPI.Controllers {
@@ -30,8 +31,14 @@ namespace SPeliculasAPI.Controllers {
         /// </summary>
         /// <returns></returns>
         [HttpGet("listado")]
-        public async Task<ActionResult<List<ActorDTO>>> actoresAll() {
-            var actores = await context.Actores.ToListAsync();
+        public async Task<ActionResult<List<ActorDTO>>> actoresAll([FromQuery] PaginacionDTO paginacionDTO) {
+            var query = context.Actores.AsQueryable();
+
+            await HttpContext.paginacionCabecera(query);
+
+            var actores = await query.OrderBy(a => a.Id)
+                                     .Paginar(paginacionDTO)
+                                     .ToListAsync();
 
             return mapper.Map<List<ActorDTO>>(actores);
         }
