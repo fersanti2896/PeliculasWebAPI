@@ -6,5 +6,6 @@ namespace SPeliculasAPI.DTOs {
         [ArchivoValidacion(pesoMax: 4)]
         [TipoArchivoValidacion(tipoArchivo: TipoArchivo.Imagen)]
         public IFormFile Poster { get; set; }
+        public List<int> GenerosIds { get; set; }
     }
 }
