@@ -52,6 +52,11 @@ namespace SPeliculasAPI.Controllers {
             return result;
         }
 
+        /// <summary>
+        /// Listado de peliculas basado en el filtro de búsqueda.
+        /// </summary>
+        /// <param name="filtroPeliculaDTO"></param>
+        /// <returns></returns>
         [HttpGet("filtro")]
         public async Task<ActionResult<List<PeliculaDTO>>> peliculaFilter([FromQuery] FiltroPeliculaDTO filtroPeliculaDTO) {
             var query = context.Peliculas.AsQueryable();
@@ -82,12 +87,17 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id:int}", Name = "ObtenerPelicula")]
-        public async Task<ActionResult<PeliculaDTO>> peliculaById(int id) { 
-            var pelicula = await context.Peliculas.FirstOrDefaultAsync(x => x.Id == id);
+        public async Task<ActionResult<PeliculaDetallesDTO>> peliculaById(int id) { 
+            var pelicula = await context.Peliculas
+                                        .Include(x => x.PeliculasActores)
+                                        .ThenInclude(p => p.Actor)
+                                        .Include(x => x.PeliculasGeneros)
+                                        .ThenInclude(g => g.Genero)
+                                        .FirstOrDefaultAsync(x => x.Id == id);
 
             if(pelicula is null) { return NotFound($"No existe la película con el id {id}"); }
 
-            return mapper.Map<PeliculaDTO>(pelicula);
+            return mapper.Map<PeliculaDetallesDTO>(pelicula);
         }
 
         /// <summary>
