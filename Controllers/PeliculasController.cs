@@ -77,6 +77,7 @@ namespace SPeliculasAPI.Controllers {
                 }
             }
 
+            asignaOrdenActores(pelicula);
             context.Add(pelicula);
 
             await context.SaveChangesAsync();
@@ -93,7 +94,10 @@ namespace SPeliculasAPI.Controllers {
         /// <returns></returns>
         [HttpPut("actualizar/{id:int}")]
         public async Task<ActionResult> peliculaUpdate(int id, [FromForm] PeliculaCreacionDTO peliculaCreacionDTO) {
-            var pelicula = await context.Peliculas.FirstOrDefaultAsync(x => x.Id == id);
+            var pelicula = await context.Peliculas
+                                        .Include(x => x.PeliculasActores)
+                                        .Include(x => x.PeliculasGeneros)
+                                        .FirstOrDefaultAsync(x => x.Id == id);
 
             if (pelicula is null) { return NotFound($"No existe la película con el id {id}"); }
 
@@ -110,6 +114,7 @@ namespace SPeliculasAPI.Controllers {
                 }
             }
 
+            asignaOrdenActores(pelicula);
             await context.SaveChangesAsync();
 
             return NoContent();
@@ -158,6 +163,14 @@ namespace SPeliculasAPI.Controllers {
             await context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        private void asignaOrdenActores(Pelicula pelicula) {
+            if (pelicula.PeliculasActores != null) {
+                for (int i = 0; i < pelicula.PeliculasActores.Count; i++) {
+                    pelicula.PeliculasActores[i].Orden = i;
+                }
+            }
         }
     }
 }
