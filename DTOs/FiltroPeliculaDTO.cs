@@ -7,5 +7,7 @@
         public int GeneroId { get; set; }
         public bool enCines { get; set; }
         public bool ProximosEstrenos { get; set; }
+        public string OrdenarCampo { get; set; }
+        public bool Ordenacion { get; set; }
     }
 }

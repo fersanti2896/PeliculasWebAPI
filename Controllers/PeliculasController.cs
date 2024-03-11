@@ -6,6 +6,7 @@ using SPeliculasAPI.DTOs;
 using SPeliculasAPI.Entidades;
 using SPeliculasAPI.Helpers;
 using SPeliculasAPI.Services;
+using System.Linq.Dynamic.Core; 
 
 namespace SPeliculasAPI.Controllers {
     [ApiController]
@@ -14,16 +15,19 @@ namespace SPeliculasAPI.Controllers {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IAlmacenadorArchivoService almacenadorArchivoService;
+        private readonly ILogger<PeliculasController> logger;
         private readonly string contenedor = "Peliculas";
 
         public PeliculasController(
             ApplicationDbContext context,
             IMapper mapper,
-            IAlmacenadorArchivoService almacenadorArchivoService
+            IAlmacenadorArchivoService almacenadorArchivoService,
+            ILogger<PeliculasController> logger
         ) {
             this.context = context;
             this.mapper = mapper;
             this.almacenadorArchivoService = almacenadorArchivoService;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -72,6 +76,16 @@ namespace SPeliculasAPI.Controllers {
 
             if (filtroPeliculaDTO.GeneroId != 0) {
                 query = query.Where(x => x.PeliculasGeneros.Select(y => y.GeneroId).Contains(filtroPeliculaDTO.GeneroId));
+            }
+
+            if (!string.IsNullOrEmpty(filtroPeliculaDTO.OrdenarCampo)) {
+                var tipoOrden = filtroPeliculaDTO.Ordenacion ? "ascending" : "descending";
+                
+                try {
+                    query = query.OrderBy($"{filtroPeliculaDTO.OrdenarCampo} {tipoOrden}");
+                } catch (Exception ex) {
+                    logger.LogError(ex.Message, ex);
+                }
             }
 
             await HttpContext.paginacionCabecera(query);
