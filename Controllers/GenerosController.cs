@@ -7,14 +7,14 @@ using SPeliculasAPI.Entidades;
 namespace SPeliculasAPI.Controllers {
     [ApiController]
     [Route("api/v1/generos")]
-    public class GenerosController : ControllerBase {
+    public class GenerosController : CustomBaseController {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
 
         public GenerosController(
             ApplicationDbContext context,
             IMapper mapper
-        ) {
+        ): base(context, mapper) {
             this.context = context;
             this.mapper = mapper;
         }
@@ -25,10 +25,14 @@ namespace SPeliculasAPI.Controllers {
         /// <returns></returns>
         [HttpGet("listado")]
         public async Task<ActionResult<List<GeneroDTO>>> generosAll() {
-            var listado = await context.Generos.ToListAsync();
-            var resultado = mapper.Map<List<GeneroDTO>>(listado);
+            #region Lógica anterior si no se usa el controlador CustomBaseController
+            //var listado = await context.Generos.ToListAsync();
+            //var resultado = mapper.Map<List<GeneroDTO>>(listado);
 
-            return resultado;
+            //return resultado;
+            #endregion
+
+            return await Get<Genero, GeneroDTO>();
         }
 
         /// <summary>
@@ -38,13 +42,17 @@ namespace SPeliculasAPI.Controllers {
         /// <returns></returns>
         [HttpGet("{id:int}", Name = "ObtenerGenero")]
         public async Task<ActionResult<GeneroDTO>> obtieneGeneroById(int id) {
-            var genero = await context.Generos.FirstOrDefaultAsync(g => g.Id == id);
+            #region Lógica anterior si no se usa el controlador CustomBaseController
+            //var genero = await context.Generos.FirstOrDefaultAsync(g => g.Id == id);
 
-            if(genero is null) { return NotFound("Género no encontrado"); }
+            //if (genero is null) { return NotFound("Género no encontrado"); }
 
-            var generoDTO = mapper.Map<GeneroDTO>(genero);
+            //var generoDTO = mapper.Map<GeneroDTO>(genero);
 
-            return generoDTO;
+            //return generoDTO;
+            #endregion
+
+            return await GetById<Genero, GeneroDTO>(id);
         }
 
         /// <summary>
@@ -53,15 +61,19 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="generoCreacionDTO"></param>
         /// <returns></returns>
         [HttpPost("crear")]
-        public async Task<ActionResult> generoCreate([FromBody] GeneroCreacionDTO generoCreacionDTO) { 
-            var genero = mapper.Map<Genero>(generoCreacionDTO);
-            context.Add(genero);
+        public async Task<ActionResult> generoCreate([FromBody] GeneroCreacionDTO generoCreacionDTO) {
+            #region Lógica anterior si no se usa el controlador CustomBaseController
+            //var genero = mapper.Map<Genero>(generoCreacionDTO);
+            //context.Add(genero);
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
 
-            var generoDTO = mapper.Map<GeneroDTO>(genero);
+            //var generoDTO = mapper.Map<GeneroDTO>(genero);
 
-            return new CreatedAtRouteResult("ObtenerGenero", new { Id = generoDTO.Id }, generoDTO);
+            //return new CreatedAtRouteResult("ObtenerGenero", new { Id = generoDTO.Id }, generoDTO);
+            #endregion
+
+            return await Post<GeneroCreacionDTO, Genero, GeneroDTO>(generoCreacionDTO, "ObtenerGenero");
         }
 
         /// <summary>
@@ -72,17 +84,21 @@ namespace SPeliculasAPI.Controllers {
         /// <returns></returns>
         [HttpPut("actualizar/{id:int}")]
         public async Task<ActionResult> generoUpdate(int id, [FromBody] GeneroCreacionDTO generoCreacionDTO) {
-            var generoExiste = await context.Generos.AnyAsync(g => g.Id == id);
+            #region Lógica anterior sino se usa el controlador CustomBaseController
+            //var generoExiste = await context.Generos.AnyAsync(g => g.Id == id);
 
-            if (!generoExiste) { return NotFound("El género no existe."); }
+            //if (!generoExiste) { return NotFound("El género no existe."); }
 
-            var genero = mapper.Map<Genero>(generoCreacionDTO);
-            genero.Id = id;
+            //var genero = mapper.Map<Genero>(generoCreacionDTO);
+            //genero.Id = id;
 
-            context.Entry(genero).State = EntityState.Modified;
-            await context.SaveChangesAsync();
+            //context.Entry(genero).State = EntityState.Modified;
+            //await context.SaveChangesAsync();
 
-            return NoContent();
+            //return NoContent();
+            #endregion
+
+            return await Put<GeneroCreacionDTO, Genero>(id, generoCreacionDTO);
         }
 
         /// <summary>
@@ -91,16 +107,20 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("eliminar/{id:int}")]
-        public async Task<ActionResult> generoDelete(int id) { 
-            var generoExiste = await context.Generos.AnyAsync(g => g.Id == id);
+        public async Task<ActionResult> generoDelete(int id) {
+            #region Lógica anterior sino se usa el controlador CustomBaseController
+            //var generoExiste = await context.Generos.AnyAsync(g => g.Id == id);
 
-            if(!generoExiste) { return NotFound("El género no existe."); }
+            //if (!generoExiste) { return NotFound("El género no existe."); }
 
-            context.Remove(new Genero() { Id = id });
+            //context.Remove(new Genero() { Id = id });
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
 
-            return NoContent();
+            //return NoContent();
+            #endregion
+
+            return await Delete<Genero>(id);
         }
     }
 }

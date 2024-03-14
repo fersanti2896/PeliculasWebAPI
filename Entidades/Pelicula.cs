@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace SPeliculasAPI.Entidades {
-    public class Pelicula {
+    public class Pelicula : IId {
         public int Id { get; set; }
         [Required]
         [StringLength(400)]
