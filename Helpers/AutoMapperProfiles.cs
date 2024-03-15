@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using SPeliculasAPI.DTOs;
 using SPeliculasAPI.Entidades;
 
 namespace SPeliculasAPI.Helpers {
     public class AutoMapperProfiles : Profile {
-        public AutoMapperProfiles() {
+        public AutoMapperProfiles(GeometryFactory geometryFactory) {
             CreateMap<Genero, GeneroDTO>().ReverseMap();
             CreateMap<GeneroCreacionDTO, Genero>();
 
@@ -20,6 +22,12 @@ namespace SPeliculasAPI.Helpers {
 
             CreateMap<Pelicula, PeliculaDetallesDTO>().ForMember(x => x.Generos, opc => opc.MapFrom(mapPelGeneros))
                                                       .ForMember(x => x.Actores, opc => opc.MapFrom(mapPelActores));
+
+            CreateMap<SalaCine, SalaCineDTO>().ForMember(x => x.Latitud, x => x.MapFrom(y => y.Ubicacion.Y))
+                                              .ForMember(x => x.Longitud, x => x.MapFrom(y => y.Ubicacion.X));
+
+            CreateMap<SalaCineDTO, SalaCine>().ForMember(x => x.Ubicacion, x => x.MapFrom(y => geometryFactory.CreatePoint(new Coordinate(y.Longitud, y.Latitud))));
+            CreateMap<SalaCineCreacionDTO, SalaCine>().ForMember(x => x.Ubicacion, x => x.MapFrom(y => geometryFactory.CreatePoint(new Coordinate(y.Longitud, y.Latitud)))); ;
         }
 
         private List<PeliculasGeneros> mapPeliculaGenero(PeliculaCreacionDTO peliculaCreacionDTO, Pelicula pelicula) {

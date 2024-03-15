@@ -1,5 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
+using SPeliculasAPI.Helpers;
 using SPeliculasAPI.Services;
 using System.Reflection;
 
@@ -20,8 +24,19 @@ namespace SPeliculasAPI {
             services.AddTransient<IAlmacenadorArchivoService, AlmacenadorArchivoService>();
             services.AddHttpContextAccessor();
 
+            // Configuramos NetTopology
+            services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+            services.AddSingleton(provider =>  
+                new MapperConfiguration(config => {
+                    var geometry = provider.GetRequiredService<GeometryFactory>();
+                    config.AddProfile(new AutoMapperProfiles(geometry));
+                }).CreateMapper()
+            );
+
             // Add services to the container.
-            services.AddDbContext<ApplicationDbContext>(opc => opc.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationDbContext>(opc => opc.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                                                                                sqlServerOpt => sqlServerOpt.UseNetTopologySuite())
+                                                        );
             services.AddControllers().AddNewtonsoftJson();
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
