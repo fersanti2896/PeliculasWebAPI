@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using SPeliculasAPI.Services;
 namespace SPeliculasAPI.Controllers {
     [ApiController]
     [Route("api/v1/actores")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
     public class ActoresController : ControllerBase {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
