@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using SPeliculasAPI.DTOs;
 using SPeliculasAPI.Entidades;
 
@@ -9,10 +11,16 @@ namespace SPeliculasAPI.Controllers {
     public class SalaCineController : CustomBaseController {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly GeometryFactory geometryFactory;
 
-        public SalaCineController(ApplicationDbContext context, IMapper mapper) : base(context, mapper) {
+        public SalaCineController(
+            ApplicationDbContext context, 
+            IMapper mapper, 
+            GeometryFactory geometryFactory
+        ) : base(context, mapper) {
             this.context = context;
             this.mapper = mapper;
+            this.geometryFactory = geometryFactory;
         }
 
         /// <summary>
@@ -63,6 +71,29 @@ namespace SPeliculasAPI.Controllers {
         [HttpDelete("eliminar/{id:int}")]
         public async Task<ActionResult> salaCineDelete(int id) {
             return await Delete<SalaCine>(id);
+        }
+
+        /// <summary>
+        /// Ubica salas de cines cercanos a tu longitud y latitud
+        /// </summary>
+        /// <param name="salaCineFiltroDTO"></param>
+        /// <returns></returns>
+        [HttpGet("cercano")]
+        public async Task<ActionResult<List<SalaCineCercannoDTO>>> salaCineCercano([FromQuery] SalaCineFiltroDTO salaCineFiltroDTO) {
+            var ubicacion = geometryFactory.CreatePoint(new Coordinate(salaCineFiltroDTO.Longitud, salaCineFiltroDTO.Latitud));
+
+            var salaCine = await context.SalasCines.OrderBy(x => x.Ubicacion.Distance(ubicacion))
+                                                   .Where(x => x.Ubicacion.IsWithinDistance(ubicacion, salaCineFiltroDTO.DistanciaKM * 1000))
+                                                   .Select(x => new SalaCineCercannoDTO { 
+                                                    Id = x.Id,
+                                                    Nombre = x.Nombre,
+                                                    Latitud = x.Ubicacion.Y,
+                                                    Longitud = x.Ubicacion.X,
+                                                    DistanciaMetros = Math.Round(x.Ubicacion.Distance(ubicacion))
+                                                   })
+                                                   .ToListAsync();
+
+            return salaCine;
         }
     }
 }
