@@ -134,5 +134,21 @@ namespace SPeliculasAPI.Controllers {
 
             return mapper.Map<List<TDTO>>(entidad);
         }
+
+        /// <summary>
+        /// Método para paginar un listado de una entidad.
+        /// </summary>
+        /// <typeparam name="TEntidad"></typeparam>
+        /// <typeparam name="TDTO"></typeparam>
+        /// <param name="paginacion"></param>
+        /// <returns></returns>
+        protected async Task<List<TDTO>> GetPagination<TEntidad, TDTO>(PaginacionDTO paginacion, IQueryable<TEntidad> query) where TEntidad : class {
+            await HttpContext.paginacionCabecera(query);
+
+            var entidad = await query.Paginar(paginacion)
+                                     .ToListAsync();
+
+            return mapper.Map<List<TDTO>>(entidad);
+        }
     }
 }

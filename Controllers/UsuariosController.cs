@@ -110,6 +110,8 @@ namespace AutoresAPI.Controllers.V1 {
             };
 
             var user = await userManager.FindByEmailAsync(usuario.Email);
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
             var claimDB = await userManager.GetClaimsAsync(user);
             claims.AddRange(claimDB);
 

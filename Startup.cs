@@ -37,6 +37,8 @@ namespace SPeliculasAPI {
                 }).CreateMapper()
             );
 
+            services.AddScoped<ExisteAttribute>();
+
             // Add services to the container.
             services.AddDbContext<ApplicationDbContext>(opc => opc.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                                                                                 sqlServerOpt => sqlServerOpt.UseNetTopologySuite())

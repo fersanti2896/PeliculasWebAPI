@@ -12,7 +12,6 @@ using SPeliculasAPI.Services;
 namespace SPeliculasAPI.Controllers {
     [ApiController]
     [Route("api/v1/actores")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
     public class ActoresController : ControllerBase {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
@@ -34,6 +33,7 @@ namespace SPeliculasAPI.Controllers {
         /// </summary>
         /// <returns></returns>
         [HttpGet("listado")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
         public async Task<ActionResult<List<ActorDTO>>> actoresAll([FromQuery] PaginacionDTO paginacionDTO) {
             var query = context.Actores.AsQueryable();
 
