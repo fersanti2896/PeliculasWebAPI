@@ -9,25 +9,22 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace AutoresAPI.Controllers.V1 {
+namespace SPeliculasAPI.Controllers {
     [ApiController]
     [Route("api/v1/usuarios")]
     public class UsuariosController : ControllerBase {
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
         private readonly SignInManager<IdentityUser> signInManager;
-        private readonly IDataProtector dataProtector;
 
         public UsuariosController(
             UserManager<IdentityUser> userManager,
             IConfiguration configuration,
-            SignInManager<IdentityUser> signInManager,
-            IDataProtectionProvider dataProtectionProvider
+            SignInManager<IdentityUser> signInManager
         ) {
             this.userManager = userManager;
             this.configuration = configuration;
             this.signInManager = signInManager;
-            dataProtector = dataProtectionProvider.CreateProtector("fersa2896");
         }
 
         /// <summary>
