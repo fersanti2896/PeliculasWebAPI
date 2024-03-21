@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPeliculasAPI.DTOs;
@@ -107,6 +109,7 @@ namespace SPeliculasAPI.Controllers {
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("eliminar/{id:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
         public async Task<ActionResult> generoDelete(int id) {
             #region Lógica anterior sino se usa el controlador CustomBaseController
             //var generoExiste = await context.Generos.AnyAsync(g => g.Id == id);
